@@ -1,111 +1,69 @@
 import React from 'react';
+
 import './App.css';
-import TodoListFooter from "./TodoListFooter";
-import TodoListHeader from "./TodoListHeader";
-import TodoListTasks from "./TodoListTasks";
+import TodoList from "./TodoList";
+import AddNewItemForm from "./AddNewItemForm";
 
 class App extends React.Component {
 
 	componentDidMount () {
-		this.restoreState ();
+		this.restoreState();
 	}
 
 	state = {
-		tasks: [
-			// {id: 1, title: "JS", isDone: false, priority: "high"},
-			// {id: 2, title: "HTML", isDone: true, priority: "medium"},
-			// {id: 3, title: "CSS", isDone: false, priority: "medium"},
-			// {id: 4, title: "React", isDone: false, priority: "high"}
-		],
-		filterValue: "All"
+		todolists: [
+			// {id: 1, title: "Mount"},
+			// {id: 2, title: "Week"},
+			// {id: 3, title: "Day"}
+		]
 	};
-	newTaskId = 1;
-
+	newTodoListId = 1;
 
 	saveState = () => {
-		let stateAsString = JSON.stringify (this.state);
-		localStorage.setItem ("todolist-state", stateAsString)
+		let stateAsString = JSON.stringify(this.state);
+		localStorage.setItem("todolists", stateAsString)
 	};
+
 	restoreState = () => {
-		let stateAsString = localStorage.getItem ("todolist-state");
+		let stateAsString = localStorage.getItem("todolists");
 		if (stateAsString) {
-			let state = JSON.parse (stateAsString);
-			state.tasks.forEach (t => {
-				if (t.id >= this.newTaskId) {
-					this.newTaskId++;
+			let state = JSON.parse(stateAsString);
+			state.todolists.forEach(tl => {
+				if (tl.id >= this.newTodoListId) {
+					this.newTodoListId++;
 				}
 			});
-			this.setState (state);
+			this.setState(state);
 		}
 	};
 
-
-	addTask = (newTaskTitle) => {
-		let newTask = {
-			id: this.newTaskId,
-			title: newTaskTitle,
-			isDone: false,
-			priority: "high"
+	addTodoList = (newTodoListTitle) => {
+		let newTodoList = {
+			id: this.newTodoListId,
+			title: newTodoListTitle,
 		};
-		this.newTaskId++;
-		let newTasks = [...this.state.tasks, newTask];
-		this.setState ({
-			tasks: newTasks
+		this.newTodoListId++;
+		let newTodoLists = [...this.state.todolists, newTodoList];
+		this.setState({
+			todolists: newTodoLists
 		}, () => {
-			this.saveState ()
+			this.saveState()
 		});
 	};
-	changeFilter = (newFilterValue) => {
-		this.setState ({
-			filterValue: newFilterValue
-		}, () => {
-			this.saveState ()
-		})
-	};
-	changeTask = (taskId, obj) => {
-		let newTasks = this.state.tasks.map (t => {
-			if (t.id === taskId) {
-				return {...t, ...obj};
-			}
-			return t;
-		})
-		this.setState ({
-			tasks: newTasks
-		}, () => {
-			this.saveState ()
-		})
-	};
-	changeTitle = (taskId, newTitle) => {
-		this.changeTask (taskId, {title: newTitle})
-	};
-	changeStatus = (taskId, newStatus) => {
-		this.changeTask (taskId, {isDone: newStatus})
-	};
-
 
 	render = () => {
+
+		let todolists = this.state.todolists.map(tl => <TodoList id={tl.id} title={tl.title}/>)
+
 		return (
-			<div className="App">
-				<div className="todoList">
-					<TodoListHeader addTask={this.addTask}/>
-					<TodoListTasks changeStatus={this.changeStatus}
-								   changeTitle={this.changeTitle}
-								   tasks={this.state.tasks.filter (task => {
-									   switch (this.state.filterValue) {
-										   case "All":
-											   return true;
-										   case "Completed":
-											   return task.isDone;
-										   case "Active":
-											   return !task.isDone;
-										   default:
-											   return true;
-									   }
-								   })
-								   }/>
-					<TodoListFooter filterValue={this.state.filterValue} changeFilter={this.changeFilter}/>
+			<>
+				<div>
+					<AddNewItemForm addItem={this.addTodoList}/>
 				</div>
-			</div>
+				<div className="App">
+					{todolists}
+				</div>
+			</>
 		);
 	}
 }
