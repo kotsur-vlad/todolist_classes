@@ -1,4 +1,5 @@
 import React from 'react';
+import {connect} from "react-redux";
 
 import './App.css';
 import TodoList from "./TodoList";
@@ -7,53 +8,15 @@ import AddNewItemForm from "./AddNewItemForm";
 class App extends React.Component {
 
 	componentDidMount () {
-		this.restoreState();
 	}
 
-	state = {
-		todolists: [
-			// {id: 1, title: "Mount"},
-			// {id: 2, title: "Week"},
-			// {id: 3, title: "Day"}
-		]
-	};
-	newTodoListId = 1;
-
-	saveState = () => {
-		let stateAsString = JSON.stringify(this.state);
-		localStorage.setItem("todolists", stateAsString)
-	};
-
-	restoreState = () => {
-		let stateAsString = localStorage.getItem("todolists");
-		if (stateAsString) {
-			let state = JSON.parse(stateAsString);
-			state.todolists.forEach(tl => {
-				if (tl.id >= this.newTodoListId) {
-					this.newTodoListId++;
-				}
-			});
-			this.setState(state);
-		}
-	};
-
 	addTodoList = (newTodoListTitle) => {
-		let newTodoList = {
-			id: this.newTodoListId,
-			title: newTodoListTitle,
-		};
-		this.newTodoListId++;
-		let newTodoLists = [...this.state.todolists, newTodoList];
-		this.setState({
-			todolists: newTodoLists
-		}, () => {
-			this.saveState()
-		});
+		this.props.addTodoList(newTodoListTitle)
 	};
 
 	render = () => {
 
-		let todolists = this.state.todolists.map(tl => <TodoList id={tl.id} title={tl.title}/>)
+		let todolists = this.props.todolists.map(tl => <TodoList key={tl.id} id={tl.id} title={tl.title} tasks={tl.tasks}/>)
 
 		return (
 			<>
@@ -68,4 +31,24 @@ class App extends React.Component {
 	}
 }
 
-export default App;
+const mapStateToProps = (state) => {
+	return {
+		todolists: state.todolists
+	}
+}
+
+const mapDispatchToProps = (dispatch) => {
+	return {
+		addTodoList: (newTodoListTitle) => {
+			const action = {
+				type: "ADD_TODOLIST",
+				newTodoListTitle
+			}
+			dispatch(action)
+		}
+	}
+}
+
+const AppContainer = connect(mapStateToProps, mapDispatchToProps)(App)
+
+export default AppContainer;
